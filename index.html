@@ -131,6 +131,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex: 1;
         }
 
         .home-btn {
@@ -451,7 +452,6 @@
             margin-bottom: 15px;
         }
 
-        /* Install prompt */
         .install-prompt {
             position: fixed;
             bottom: 20px;
@@ -462,32 +462,35 @@
             padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             display: none;
-            align-items: center;
-            gap: 15px;
             z-index: 1001;
         }
 
         .install-prompt.show {
-            display: flex;
+            display: block;
         }
 
         .install-icon {
             font-size: 40px;
-        }
-
-        .install-text {
-            flex: 1;
+            text-align: center;
+            margin-bottom: 10px;
         }
 
         .install-title {
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .install-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            text-align: center;
         }
 
         .install-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
         }
 
         .install-btn {
@@ -511,20 +514,16 @@
     </style>
 </head>
 <body>
-    <!-- Install Prompt -->
     <div id="installPrompt" class="install-prompt">
         <div class="install-icon">📱</div>
-        <div class="install-text">
-            <div class="install-title">Installer l'application</div>
-            <div style="font-size: 0.9em; color: #666;">Ajoutez Mes Routines à votre écran d'accueil !</div>
-            <div class="install-buttons">
-                <button class="install-btn install-btn-primary" onclick="installApp()">Installer</button>
-                <button class="install-btn install-btn-secondary" onclick="dismissInstall()">Plus tard</button>
-            </div>
+        <div class="install-title">Installer l'application</div>
+        <div class="install-text">Ajoutez Mes Routines à votre écran d'accueil !</div>
+        <div class="install-buttons">
+            <button class="install-btn install-btn-primary" onclick="installApp()">Installer</button>
+            <button class="install-btn install-btn-secondary" onclick="dismissInstall()">Plus tard</button>
         </div>
     </div>
 
-    <!-- Page d'accueil -->
     <div id="homeScreen" class="home-screen">
         <h1 class="home-title">🌟 Mes Routines 🌟</h1>
         <p class="home-subtitle">Qui es-tu aujourd'hui ?</p>
@@ -546,35 +545,119 @@
         <button class="admin-button" onclick="showPasswordPrompt()">🔒 Mode Parent</button>
     </div>
 
-    <!-- Application principale -->
     <div id="mainApp" class="main-app">
-        <!-- Contenu identique à la version précédente -->
-        <!-- Je vais le compléter dans le prochain message pour ne pas dépasser la limite -->
+        <div class="header">
+            <div class="header-left">
+                <button class="home-btn" onclick="returnToHome()">🏠</button>
+                <div>
+                    <div class="user-info">
+                        <span id="currentAvatar" class="header-avatar"></span>
+                        <span id="currentUserName" class="header-title"></span>
+                    </div>
+                    <div style="font-size: 0.85em; color: #666;">Tes routines du jour</div>
+                </div>
+            </div>
+            <button class="edit-btn" onclick="toggleAdminMode()">
+                <span id="editBtnText">🔒 Éditer</span>
+            </button>
+        </div>
+
+        <div id="adminBanner" class="admin-banner hidden">
+            ⚠️ Mode Édition actif
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">📝 Routines</div>
+                <button id="addRoutineBtn" class="add-btn hidden" onclick="showAddRoutine()">+</button>
+            </div>
+
+            <div id="addRoutineForm" class="add-form hidden">
+                <input type="text" id="newRoutineName" class="input" placeholder="Nom de la routine">
+                <div class="form-buttons">
+                    <button class="btn-primary" onclick="addRoutine()">Ajouter</button>
+                    <button class="btn-secondary" onclick="hideAddRoutine()">✕</button>
+                </div>
+            </div>
+
+            <div id="routinesList"></div>
+        </div>
+
+        <div id="tasksSection" class="section hidden">
+            <div id="tasksSectionTitle" class="section-title" style="margin-bottom: 15px;"></div>
+            
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>Progression</span>
+                    <span id="progressText">0/0 tâches</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <button id="addTaskBtn" class="add-task-btn hidden" onclick="showAddTask()">+ Ajouter une tâche</button>
+
+            <div id="addTaskForm" class="add-form hidden">
+                <input type="text" id="newTaskText" class="input" placeholder="Nom de la tâche">
+                <div class="form-buttons">
+                    <button class="btn-primary" onclick="addTask()">Ajouter</button>
+                    <button class="btn-secondary" onclick="hideAddTask()">Annuler</button>
+                </div>
+            </div>
+
+            <div id="tasksList"></div>
+
+            <div id="congratsCard" class="congrats-card hidden">
+                <div class="congrats-title">🎉 <span id="congratsName"></span> !</div>
+                <div>Routine terminée avec succès !</div>
+            </div>
+        </div>
+
+        <div id="emptyTasksState" class="section hidden">
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <div style="font-size: 1.2em; margin-bottom: 5px;">Sélectionne une routine</div>
+                <div>Choisis une routine dans la liste pour commencer</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">🔐 Mode Édition</div>
+            <div class="modal-text">Entrez le mot de passe administrateur</div>
+            <input type="password" id="passwordInput" class="input" placeholder="Mot de passe">
+            <div id="passwordError" class="error-text hidden">❌ Mot de passe incorrect</div>
+            <div class="form-buttons">
+                <button class="btn-primary" onclick="checkPassword()">Valider</button>
+                <button class="btn-secondary" onclick="hidePasswordPrompt()">Annuler</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Service Worker registration
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js')
-                .then(reg => console.log('Service Worker enregistré'))
-                .catch(err => console.log('Erreur Service Worker:', err));
+                .then(reg => console.log('SW ok'))
+                .catch(err => console.log('SW err:', err));
         }
 
-        // Install prompt
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Afficher le prompt après 3 secondes
-            setTimeout(() => {
-                document.getElementById('installPrompt').classList.add('show');
-            }, 3000);
+            if (!localStorage.getItem('installDismissed')) {
+                setTimeout(() => {
+                    document.getElementById('installPrompt').classList.add('show');
+                }, 3000);
+            }
         });
 
         function installApp() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
+                deferredPrompt.userChoice.then(() => {
                     deferredPrompt = null;
                     document.getElementById('installPrompt').classList.remove('show');
                 });
@@ -586,8 +669,270 @@
             localStorage.setItem('installDismissed', 'true');
         }
 
-        // Tout le code JavaScript de l'application ici
-        // (Le même que dans la version précédente)
-    </script>
-</body>
-</html>
+        const ADMIN_PASSWORD = 'admin123';
+        const INACTIVITY_TIMEOUT = 120000;
+
+        const users = [
+            { id: 1, name: 'Léa', avatar: '👧', color: '#ec4899' },
+            { id: 2, name: 'Hugo', avatar: '👦', color: '#3b82f6' }
+        ];
+
+        let routines = [
+            {
+                id: 1, userId: 1, name: 'Routine du Matin',
+                tasks: [
+                    { id: 1, text: 'Brosser les dents', completed: false },
+                    { id: 2, text: 'Préparer son cartable', completed: false },
+                    { id: 3, text: 'Prendre le petit-déjeuner', completed: false }
+                ]
+            },
+            {
+                id: 2, userId: 1, name: 'Routine du Soir',
+                tasks: [
+                    { id: 1, text: 'Mettre la table', completed: false },
+                    { id: 2, text: 'Ranger sa chambre', completed: false },
+                    { id: 3, text: 'Brosser les dents', completed: false }
+                ]
+            },
+            {
+                id: 3, userId: 2, name: 'Routine du Matin',
+                tasks: [
+                    { id: 1, text: 'Faire son lit', completed: false },
+                    { id: 2, text: 'S\'habiller', completed: false },
+                    { id: 3, text: 'Brosser les dents', completed: false }
+                ]
+            },
+            {
+                id: 4, userId: 2, name: 'Routine du Soir',
+                tasks: [
+                    { id: 1, text: 'Ranger les jouets', completed: false },
+                    { id: 2, text: 'Prendre sa douche', completed: false },
+                    { id: 3, text: 'Brosser les dents', completed: false }
+                ]
+            }
+        ];
+
+        let currentUser = null;
+        let selectedRoutine = null;
+        let isAdminMode = false;
+        let lastActivity = Date.now();
+
+        function loadData() {
+            const saved = localStorage.getItem('routines');
+            if (saved) {
+                routines = JSON.parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('routines', JSON.stringify(routines));
+        }
+
+        function updateActivity() {
+            lastActivity = Date.now();
+        }
+
+        function checkInactivity() {
+            if (Date.now() - lastActivity > INACTIVITY_TIMEOUT && currentUser) {
+                returnToHome();
+            }
+        }
+
+        document.addEventListener('click', updateActivity);
+        document.addEventListener('touchstart', updateActivity);
+        setInterval(checkInactivity, 5000);
+
+        function selectUser(userId) {
+            currentUser = userId;
+            const user = users.find(u => u.id === userId);
+            
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            
+            document.getElementById('currentAvatar').textContent = user.avatar;
+            document.getElementById('currentUserName').textContent = `Bonjour ${user.name} !`;
+            document.getElementById('congratsName').textContent = `Bravo ${user.name}`;
+            
+            updateActivity();
+            renderRoutines();
+        }
+
+        function returnToHome() {
+            currentUser = null;
+            selectedRoutine = null;
+            isAdminMode = false;
+            
+            document.getElementById('homeScreen').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('adminBanner').classList.add('hidden');
+            document.getElementById('addRoutineBtn').classList.add('hidden');
+            document.getElementById('addTaskBtn').classList.add('hidden');
+        }
+
+        function showPasswordPrompt() {
+            document.getElementById('passwordModal').classList.add('show');
+            document.getElementById('passwordInput').focus();
+        }
+
+        function hidePasswordPrompt() {
+            document.getElementById('passwordModal').classList.remove('show');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').classList.add('hidden');
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdminMode = true;
+                hidePasswordPrompt();
+                updateAdminMode();
+            } else {
+                document.getElementById('passwordError').classList.remove('hidden');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function toggleAdminMode() {
+            if (isAdminMode) {
+                isAdminMode = false;
+                updateAdminMode();
+            } else {
+                showPasswordPrompt();
+            }
+        }
+
+        function updateAdminMode() {
+            if (isAdminMode) {
+                document.getElementById('adminBanner').classList.remove('hidden');
+                document.getElementById('addRoutineBtn').classList.remove('hidden');
+                document.getElementById('addTaskBtn').classList.remove('hidden');
+                document.getElementById('editBtnText').textContent = '✕ Quitter';
+            } else {
+                document.getElementById('adminBanner').classList.add('hidden');
+                document.getElementById('addRoutineBtn').classList.add('hidden');
+                document.getElementById('addTaskBtn').classList.add('hidden');
+                document.getElementById('addRoutineForm').classList.add('hidden');
+                document.getElementById('addTaskForm').classList.add('hidden');
+                document.getElementById('editBtnText').textContent = '🔒 Éditer';
+            }
+            renderRoutines();
+            if (selectedRoutine) {
+                renderTasks();
+            }
+        }
+
+        function showAddRoutine() {
+            document.getElementById('addRoutineForm').classList.remove('hidden');
+            document.getElementById('newRoutineName').focus();
+        }
+
+        function hideAddRoutine() {
+            document.getElementById('addRoutineForm').classList.add('hidden');
+            document.getElementById('newRoutineName').value = '';
+        }
+
+        function addRoutine() {
+            const name = document.getElementById('newRoutineName').value.trim();
+            if (name && currentUser) {
+                const newRoutine = {
+                    id: Date.now(),
+                    userId: currentUser,
+                    name: name,
+                    tasks: []
+                };
+                routines.push(newRoutine);
+                saveData();
+                hideAddRoutine();
+                renderRoutines();
+                selectRoutineById(newRoutine.id);
+            }
+        }
+
+        function deleteRoutine(id) {
+            if (confirm('Supprimer cette routine ?')) {
+                routines = routines.filter(r => r.id !== id);
+                if (selectedRoutine === id) {
+                    selectedRoutine = null;
+                }
+                saveData();
+                renderRoutines();
+                renderTasks();
+            }
+        }
+
+        function renderRoutines() {
+            const container = document.getElementById('routinesList');
+            const userRoutines = routines.filter(r => r.userId === currentUser);
+            
+            if (userRoutines.length === 0 && !isAdminMode) {
+                container.innerHTML = '<div class="empty-state"><div>Aucune routine</div></div>';
+                return;
+            }
+            
+            container.innerHTML = userRoutines.map(routine => {
+                const completed = routine.tasks.filter(t => t.completed).length;
+                const total = routine.tasks.length;
+                const isSelected = selectedRoutine === routine.id;
+                
+                return `
+                    <div class="routine-card ${isSelected ? 'selected' : ''}" onclick="selectRoutineById(${routine.id})">
+                        <div>
+                            <div class="routine-name">${routine.name}</div>
+                            <div class="routine-progress">${completed}/${total} tâches</div>
+                        </div>
+                        ${isAdminMode ? `<button class="delete-btn" onclick="event.stopPropagation(); deleteRoutine(${routine.id})">🗑️</button>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectRoutineById(id) {
+            selectedRoutine = id;
+            renderRoutines();
+            renderTasks();
+        }
+
+        function showAddTask() {
+            document.getElementById('addTaskForm').classList.remove('hidden');
+            document.getElementById('newTaskText').focus();
+        }
+
+        function hideAddTask() {
+            document.getElementById('addTaskForm').classList.add('hidden');
+            document.getElementById('newTaskText').value = '';
+        }
+
+        function addTask() {
+            const text = document.getElementById('newTaskText').value.trim();
+            if (text && selectedRoutine) {
+                const routine = routines.find(r => r.id === selectedRoutine);
+                if (routine) {
+                    routine.tasks.push({
+                        id: Date.now(),
+                        text: text,
+                        completed: false
+                    });
+                    saveData();
+                    hideAddTask();
+                    renderTasks();
+                }
+            }
+        }
+
+        function toggleTask(routineId, taskId) {
+            updateActivity();
+            const routine = routines.find(r => r.id === routineId);
+            if (routine) {
+                const task = routine.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.completed = !task.completed;
+                    saveData();
+                    renderTasks();
+                }
+            }
+        }
+
+        function deleteTask(routineId, taskId) {
+            if (confirm('Supprimer cette tâche ?')) {
+                const routine = routines.find(r => r.id === routineId);
+                if (routine) {
