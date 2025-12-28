@@ -531,13 +531,13 @@
         <div class="users-container">
             <div class="user-card" onclick="selectUser(1)">
                 <div class="user-avatar">👧</div>
-                <div class="user-name" style="color: #ec4899;">Léana</div>
+                <div class="user-name" style="color: #ec4899;">Léa</div>
                 <button class="user-button" style="background: #ec4899;">Clique ici !</button>
             </div>
             
             <div class="user-card" onclick="selectUser(2)">
                 <div class="user-avatar">👦</div>
-                <div class="user-name" style="color: #3b82f6;">Gabriel</div>
+                <div class="user-name" style="color: #3b82f6;">Hugo</div>
                 <button class="user-button" style="background: #3b82f6;">Clique ici !</button>
             </div>
         </div>
@@ -673,8 +673,8 @@
         const INACTIVITY_TIMEOUT = 120000;
 
         const users = [
-            { id: 1, name: 'Léana', avatar: '👧', color: '#ec4899' },
-            { id: 2, name: 'Gabriel', avatar: '👦', color: '#3b82f6' }
+            { id: 1, name: 'Léa', avatar: '👧', color: '#ec4899' },
+            { id: 2, name: 'Hugo', avatar: '👦', color: '#3b82f6' }
         ];
 
         let routines = [
@@ -936,3 +936,87 @@
             if (confirm('Supprimer cette tâche ?')) {
                 const routine = routines.find(r => r.id === routineId);
                 if (routine) {
+                    routine.tasks = routine.tasks.filter(t => t.id !== taskId);
+                    saveData();
+                    renderTasks();
+                }
+            }
+        }
+
+        function renderTasks() {
+            const routine = routines.find(r => r.id === selectedRoutine);
+            
+            if (!routine) {
+                document.getElementById('tasksSection').classList.add('hidden');
+                document.getElementById('emptyTasksState').classList.remove('hidden');
+                return;
+            }
+            
+            document.getElementById('tasksSection').classList.remove('hidden');
+            document.getElementById('emptyTasksState').classList.add('hidden');
+            
+            document.getElementById('tasksSectionTitle').textContent = routine.name;
+            
+            const completed = routine.tasks.filter(t => t.completed).length;
+            const total = routine.tasks.length;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
+            
+            document.getElementById('progressText').textContent = `${completed}/${total} tâches`;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            const tasksList = document.getElementById('tasksList');
+            
+            if (routine.tasks.length === 0 && !isAdminMode) {
+                tasksList.innerHTML = '<div class="empty-state"><div>Aucune tâche</div></div>';
+            } else {
+                tasksList.innerHTML = routine.tasks.map(task => `
+                    <div class="task-card ${task.completed ? 'completed' : ''}">
+                        <div class="checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${routine.id}, ${task.id})">
+                            ${task.completed ? '<span class="checkmark">✓</span>' : ''}
+                        </div>
+                        <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                        ${isAdminMode ? `<button class="delete-btn" onclick="deleteTask(${routine.id}, ${task.id})">🗑️</button>` : ''}
+                    </div>
+                `).join('');
+            }
+            
+            if (completed === total && total > 0) {
+                document.getElementById('congratsCard').classList.remove('hidden');
+            } else {
+                document.getElementById('congratsCard').classList.add('hidden');
+            }
+        }
+
+        function checkMidnight() {
+            const now = new Date();
+            if (now.getHours() === 0 && now.getMinutes() === 0) {
+                routines.forEach(routine => {
+                    routine.tasks.forEach(task => {
+                        task.completed = false;
+                    });
+                });
+                saveData();
+                if (selectedRoutine) {
+                    renderTasks();
+                }
+            }
+        }
+
+        setInterval(checkMidnight, 60000);
+
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        document.getElementById('newRoutineName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addRoutine();
+        });
+
+        document.getElementById('newTaskText').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
